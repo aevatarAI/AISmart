@@ -20,4 +20,9 @@ public class AIModelOptions
     /// Configuration options for Google Gemini.
     /// </summary>
     public MicroAIOptions GoogleGemini { get; set; }
+    
+    /// <summary>
+    /// Configuration options for Deepseek.
+    /// </summary>
+    public MicroAIOptions DeepSeek { get; set; }
 }

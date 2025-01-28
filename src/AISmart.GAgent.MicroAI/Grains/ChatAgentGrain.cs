@@ -208,6 +208,24 @@ public class ChatAgentGrain : GAgentBase<ChatAgentState, ChatAgentSEvent>, IChat
 
                 break;
             }
+                
+            case LLMTypesConstant.DeepSeek:
+            {
+                // Fetch Google Gemini-specific configuration.
+                var deepSeekOptions = aiModelOptions.DeepSeek;
+
+#pragma warning disable SKEXP0070
+                // Add Google Gemini Chat Completion to the KernelBuilder.
+                kernelBuilder.AddOpenAIChatCompletion(
+                    endpoint: new Uri(deepSeekOptions.Endpoint),
+                    modelId: deepSeekOptions.Model,
+                    apiKey: deepSeekOptions.ApiKey,
+                    serviceId: deepSeekOptions.ServiceId // Optional: Target a specific service.
+                );
+#pragma warning restore SKEXP0070
+
+                break;
+            }
 
             default:
                 throw new ArgumentException($"Unsupported LLM type: {llm}");
