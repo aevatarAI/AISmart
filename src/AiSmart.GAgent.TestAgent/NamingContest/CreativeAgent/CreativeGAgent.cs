@@ -516,6 +516,11 @@ public class CreativeGAgent : GAgentBase<CreativeState, CreativeSEventBase>, ICr
         // await stream.SubscribeAsync(ChatAgentGrainEventHandler);
     }
 
+    public Task SetAgentWithLLm(string agentName, string agentResponsibility, string llm)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task ChatAgentGrainEventHandler(MicroAIEventMessage message, StreamSequenceToken token = null)
     {
         try

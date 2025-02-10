@@ -385,6 +385,11 @@ public class FirstRoundTrafficGAgent : GAgentBase<FirstTrafficState, TrafficEven
         await GrainFactory.GetGrain<IChatAgentGrain>(agentName).SetAgentAsync(agentResponsibility);
     }
 
+    public Task SetAgentWithLLm(string agentName, string agentResponsibility, string llm)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task SetAgentWithTemperatureAsync(string agentName, string agentResponsibility, float temperature,
         int? seed = null,
         int? maxTokens = null)

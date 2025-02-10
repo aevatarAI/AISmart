@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agent.GEvents;
@@ -12,10 +13,14 @@ using AISmart.Options;
 using AutoGen.Core;
 using AutoGen.SemanticKernel;
 using AutoGen.SemanticKernel.Extension;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 using Orleans;
 using Orleans.Providers;
 using Orleans.Runtime;
@@ -108,9 +113,11 @@ public class ChatAgentGrain : GAgentBase<ChatAgentState, ChatAgentSEvent>, IChat
         SetStreamingAgent();
     }
 
-    public Task SetAgentAsync(string systemMessage, string llm)
+    public async Task SetAgentAsync(string systemMessage, string llm)
     {
-        return Task.CompletedTask;
+        RaiseEvent(new ChatAgentSEvent() { AgentResponsibility = systemMessage, LLM = llm });
+        await ConfirmEvents();
+        SetStreamingAgent();
     }
 
     public async Task SetAgentWithTemperature(string systemMessage, float temperature, int? seed = null,
@@ -188,6 +195,25 @@ public class ChatAgentGrain : GAgentBase<ChatAgentState, ChatAgentSEvent>, IChat
                 );
 #pragma warning restore SKEXP0070
 
+                break;
+            }
+            case LLMTypesConstant.DeepSeek:
+            {
+                // kernelBuilder.AddAzureOpenAIChatCompletion(
+                //     aiModelOptions.DeepSeek.Model, aiModelOptions.DeepSeek.Endpoint, aiModelOptions.DeepSeek.ApiKey);
+                OpenAIChatCompletionService GetOpenAiChatCompletion()
+                {
+                    var httpClient = new HttpClient();
+                    httpClient.BaseAddress = new Uri(aiModelOptions.DeepSeek.Endpoint);
+                    return new OpenAIChatCompletionService(aiModelOptions.DeepSeek.Model,
+                        aiModelOptions.DeepSeek.ApiKey, httpClient: httpClient);
+                }
+                
+                kernelBuilder.Services.AddSingleton<IChatCompletionService>(
+                    (sp) => GetOpenAiChatCompletion());
+                
+                kernelBuilder.Services.AddSingleton<ITextGenerationService>(
+                    (sp) => GetOpenAiChatCompletion());
                 break;
             }
 

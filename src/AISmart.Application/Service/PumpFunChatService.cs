@@ -21,19 +21,20 @@ using Volo.Abp.Application.Services;
 
 namespace AISmart.Service;
 
-public class PumpFunChatService :  ApplicationService, IPumpFunChatService
+public class PumpFunChatService : ApplicationService, IPumpFunChatService
 {
     private readonly IClusterClient _clusterClient;
     private readonly ICqrsService _cqrsService;
     private readonly ILogger<PumpFunChatService> _logger;
 
-    public PumpFunChatService(IClusterClient clusterClient, ICqrsService cqrsService, ILogger<PumpFunChatService> logger)
+    public PumpFunChatService(IClusterClient clusterClient, ICqrsService cqrsService,
+        ILogger<PumpFunChatService> logger)
     {
         _clusterClient = clusterClient;
         _cqrsService = cqrsService;
         _logger = logger;
     }
-    
+
     public async Task ReceiveMessagesAsync(PumpFunInputDto inputDto)
     {
         _logger.LogInformation("ReceiveMessagesAsync agentId:" + inputDto.AgentId);
@@ -41,11 +42,11 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
         {
             var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.Parse(inputDto.AgentId));
             await groupAgent.ActivateAsync();
-            
+
             var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
             await publishingAgent.RegisterAsync(groupAgent);
-            
-            await  publishingAgent.PublishEventAsync(new PumpFunReceiveMessageEvent
+
+            await publishingAgent.PublishEventAsync(new PumpFunReceiveMessageEvent
             {
                 ReplyId = inputDto.ReplyId,
                 RequestMessage = inputDto.RequestMessage,
@@ -58,25 +59,27 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
         _logger.LogInformation("SetGroupsAsync, chatId:{chatId}", chatId);
         Guid groupAgentId = GuidUtil.StringToGuid(chatId);
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(groupAgentId);
-        
+
         var pumpFunGAgent = _clusterClient.GetGrain<IPumpFunGAgent>(groupAgentId);
-        
+
         await pumpFunGAgent.SetPumpFunConfig(chatId);
 
         var pumpFunChatAgent = _clusterClient.GetGrain<IPumpFunChatGrain>(groupAgentId);
-        await pumpFunChatAgent.SetAgent(chatId, bio);
+        await pumpFunChatAgent.SetAgentWithLLm(chatId, bio, "deepseek");
         await groupAgent.RegisterAsync(pumpFunChatAgent);
-        
+
         await groupAgent.RegisterAsync(pumpFunGAgent);
 
         return groupAgentId.ToString();
     }
-    
+
     public async Task<PumFunResponseDto> SearchAnswerAsync(string replyId)
     {
         _logger.LogInformation("SearchAnswerAsync, replyId:{replyId}", replyId);
         // get PumpFunGAgentState
-        var eventResult = await _cqrsService.QueryGEventAsync<PumpFunSendMessageGEvent, PumpFunSendMessageGEventDto>("pumpfunsendmessagegeventindex", replyId);
+        var eventResult =
+            await _cqrsService.QueryGEventAsync<PumpFunSendMessageGEvent, PumpFunSendMessageGEventDto>(
+                "pumpfunsendmessagegeventindex", replyId);
         PumFunResponseDto answer = new PumFunResponseDto
         {
             ReplyId = eventResult.ReplyId,
