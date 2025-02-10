@@ -50,11 +50,13 @@ public class AISmartCQRSModule : AbpModule
        {
            context.Services.AddSingleton<IElasticClient>(provider =>
            {
-               var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))
-                   .DisablePing()
-                   .DisableDirectStreaming()
-                   .DefaultIndex("cqrs").DefaultFieldNameInferrer(fieldName => 
-                       char.ToLowerInvariant(fieldName[0]) + fieldName[1..]);
+               var uris = configuration.GetSection("ElasticUris:Uris").Get<string[]>();
+               if (uris == null || uris.Length == 0)
+               {
+                   throw new ArgumentNullException("ElasticUris:Uris", "Elasticsearch URIs cannot be null or empty.");
+               }
+               var settings = new ConnectionSettings(new StaticConnectionPool(uris.Select(uri => new Uri(uri)).ToArray())).DefaultFieldNameInferrer(fieldName => 
+                   char.ToLowerInvariant(fieldName[0]) + fieldName[1..]);
                return new ElasticClient(settings);
            });
     
