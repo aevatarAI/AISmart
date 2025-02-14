@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AISmart.Agent;
@@ -199,21 +200,24 @@ public class ChatAgentGrain : GAgentBase<ChatAgentState, ChatAgentSEvent>, IChat
             }
             case LLMTypesConstant.DeepSeek:
             {
-                // kernelBuilder.AddAzureOpenAIChatCompletion(
-                //     aiModelOptions.DeepSeek.Model, aiModelOptions.DeepSeek.Endpoint, aiModelOptions.DeepSeek.ApiKey);
-                OpenAIChatCompletionService GetOpenAiChatCompletion()
-                {
-                    var httpClient = new HttpClient();
-                    httpClient.BaseAddress = new Uri(aiModelOptions.DeepSeek.Endpoint);
-                    return new OpenAIChatCompletionService(aiModelOptions.DeepSeek.Model,
-                        aiModelOptions.DeepSeek.ApiKey, httpClient: httpClient);
-                }
-                
-                kernelBuilder.Services.AddSingleton<IChatCompletionService>(
-                    (sp) => GetOpenAiChatCompletion());
-                
-                kernelBuilder.Services.AddSingleton<ITextGenerationService>(
-                    (sp) => GetOpenAiChatCompletion());
+#pragma warning disable SKEXP0070
+                kernelBuilder.AddAzureAIInferenceChatCompletion(
+                    aiModelOptions.DeepSeek.Model, aiModelOptions.DeepSeek.ApiKey,
+                    new Uri(aiModelOptions.DeepSeek.Endpoint));
+#pragma warning restore SKEXP0070
+                // OpenAIChatCompletionService GetOpenAiChatCompletion()
+                // {
+                //     var httpClient = new HttpClient();
+                //     httpClient.BaseAddress = new Uri(aiModelOptions.DeepSeek.Endpoint);
+                //     return new OpenAIChatCompletionService(aiModelOptions.DeepSeek.Model,
+                //         aiModelOptions.DeepSeek.ApiKey, httpClient: httpClient);
+                // }
+                //
+                // kernelBuilder.Services.AddSingleton<IChatCompletionService>(
+                //     (sp) => GetOpenAiChatCompletion());
+                //
+                // kernelBuilder.Services.AddSingleton<ITextGenerationService>(
+                //     (sp) => GetOpenAiChatCompletion());
                 break;
             }
 

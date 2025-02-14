@@ -19,7 +19,9 @@
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.32.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Amazon" Version="1.32.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.32.0-alpha" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.32.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.33.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" Version="1.33.0-alpha"/>
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="9.0.1-preview.1.24570.5" />
     <PackageVersion Include="OpenAI.API" Version="1.0.0" />
     <PackageVersion Include="Orleans.SyncWork" Version="8.1.12" />
     <PackageVersion Include="Serilog.Formatting.Compact" Version="2.0.0" />
